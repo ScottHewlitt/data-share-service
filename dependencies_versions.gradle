@@ -1,0 +1,56 @@
+ext {
+    versions = [
+            guice                       : "5.0.1",
+            jackson                     : "2.14.2",
+            kafka                       : "2.4.0",
+            log4j                       : "2.17.2",
+            lombok                      : "1.18.22",
+            micrometer                  : "1.8.3",
+            micrometerJvmExtras         : "0.2.2",
+            rxjava3                     : "3.1.6",
+            slf4j                       : "1.7.36",
+            typesafeConfig              : "1.4.2",
+            vertx                       : "4.3.7",
+
+            //TEST
+            junit5                      : "5.9.0",
+            mockito                     : "4.8.0",
+    ]
+    libs = [
+            guice                           : "com.google.inject:guice:${versions.guice}",
+            // KAFKA
+            kafkaClients                    : "org.apache.kafka:kafka-clients:${versions.kafka}",
+            kafkaStreams                    : "org.apache.kafka:kafka-streams:${versions.kafka}",
+            kafkaStreamsTestUtils           : "org.apache.kafka:kafka-streams-test-utils:${versions.kafka}",
+            // JACKSON DATABIND
+            jacksonDatabind                 : "com.fasterxml.jackson.core:jackson-databind:${versions.jackson}",
+            jacksonDataType                 : "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${versions.jackson}",
+            // UTILS
+            lombok                          : "org.projectlombok:lombok:${versions.lombok}",
+            // METRICS
+            micrometerCore                  : "io.micrometer:micrometer-core:${versions.micrometer}",
+            micrometerJmxRegistry           : "io.micrometer:micrometer-registry-jmx:${versions.micrometer}",
+            micrometerJvmExtras             : "io.github.mweirauch:micrometer-jvm-extras:${versions.micrometerJvmExtras}",
+            micrometerPrometheusRegistry    : "io.micrometer:micrometer-registry-prometheus:${versions.micrometer}",
+            micrometerStatsdRegistry        : "io.micrometer:micrometer-registry-statsd:${versions.micrometer}",
+            // REACTIVE
+            rxjava3                         : "io.reactivex.rxjava3:rxjava:${versions.rxjava3}",
+            // LOGGING
+            slf4jApi                        : "org.slf4j:slf4j-api:${versions.slf4j}",
+            log4jSlf4jImpl                  : "org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}",
+            // CONFIG
+            typesafeConfig                  : "com.typesafe:config:${versions.typesafeConfig}",
+            // RUNNER
+            vertxCore                       : "io.vertx:vertx-core:${versions.vertx}",
+            vertxMetrics                    : "io.vertx:vertx-micrometer-metrics:${versions.vertx}",
+            vertxWeb                        : "io.vertx:vertx-web:${versions.vertx}",
+            vertxWebOpenApi                 : "io.vertx:vertx-web-openapi:${versions.vertx}",
+            vertxWebApiService              : "io.vertx:vertx-web-api-service:${versions.vertx}",
+
+            //TEST
+            junitJupiter                    : "org.junit.jupiter:junit-jupiter:${versions.junit5}",
+            mockito                         : "org.mockito:mockito-junit-jupiter:${versions.mockito}",
+            vertxJunit5                     : "io.vertx:vertx-junit5:${versions.vertx}",
+            vertxWebClient                  : "io.vertx:vertx-web-client:${versions.vertx}",
+    ]
+}

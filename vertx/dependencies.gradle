@@ -1,0 +1,26 @@
+dependencies {
+    implementation(project(":business-logic"))
+    implementation(project(":kafka"))
+    implementation(project(":micrometer"))
+
+    implementation libs.guice
+    implementation libs.log4jSlf4jImpl
+    implementation libs.jacksonDatabind
+    implementation libs.jacksonDataType
+    implementation libs.lombok
+    implementation libs.micrometerPrometheusRegistry
+    implementation libs.slf4jApi
+    implementation libs.typesafeConfig
+    implementation libs.vertxCore
+    implementation libs.vertxMetrics
+    implementation libs.vertxWeb
+    implementation libs.vertxWebApiService
+    implementation libs.vertxWebOpenApi
+
+    annotationProcessor libs.lombok
+
+    testImplementation libs.mockito
+    testImplementation libs.junitJupiter
+    testImplementation libs.vertxJunit5
+
+}

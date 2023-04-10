@@ -1,0 +1,182 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url 'https://vf-maven-pub.s3.amazonaws.com/snapshots' }
+        maven { url 'https://vf-maven-pub.s3.amazonaws.com/release' }
+    }
+    dependencies {
+        classpath 'com.viafoura.plugins:gradle-plugins:v5.0.2'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'application'
+    id 'jacoco'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id "org.ec4j.editorconfig" version "0.0.3"
+}
+
+apply plugin: 'com.viafoura.plugins.vfpipe-version'
+
+allprojects {
+    apply plugin: "java"
+    apply plugin: "jacoco"
+
+    group = 'com.viafoura.template.microservice'
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+
+    repositories {
+        mavenCentral()
+    }
+
+    apply from: "$rootDir/dependencies_versions.gradle"
+    apply plugin: 'com.viafoura.plugins.aws-repository'
+
+    sourceSets {
+        intTest {
+            compileClasspath += sourceSets.main.output
+            runtimeClasspath += sourceSets.main.output
+        }
+    }
+
+    tasks.withType(Test) {
+        useJUnitPlatform {
+        }
+        reports {
+            junitXml.required = true
+            html.required = false
+        }
+    }
+
+    // In debian containers, ASCII is the default encoding for java files. We have some unit tests that verify unicode
+    // characters work in REF. That's why we have to explicitly set the encoding here.
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
+    configurations {
+        intTestImplementation.extendsFrom implementation
+        intTestRuntimeOnly.extendsFrom runtimeOnly
+
+        all {
+            exclude module: 'slf4j-simple'
+            exclude module: 'logback-classic'
+            exclude module: 'slf4j-log4j12'
+            // there are some apps that use log4j1 without a facade
+            // for those we have a compile dependency later with an api bridge to log4j2
+            exclude module: 'log4j'
+
+            resolutionStrategy {
+                libs.each { k, v ->
+                    force(v)
+                }
+                eachDependency { DependencyResolveDetails details ->
+                    if (details.requested.group == 'org.apache.logging.log4j') {
+                        details.useVersion versions.log4j
+                    }
+                }
+            }
+        }
+    }
+
+    task integrationTests(type: Test) {
+        useJUnitPlatform {
+        }
+        description = 'Runs integration tests.'
+        group = 'verification'
+
+        testClassesDirs = sourceSets.intTest.output.classesDirs
+        classpath = sourceSets.intTest.runtimeClasspath
+        finalizedBy jacocoTestReport
+    }
+
+    task junitTests(type: Test) {
+        useJUnitPlatform {
+        }
+        finalizedBy jacocoTestReport
+    }
+
+    test {
+        dependsOn(junitTests)
+        useJUnitPlatform()
+    }
+
+    jacoco {
+        toolVersion = "0.8.8"
+        reportsDirectory = file("$rootDir/build/reports/jacoco/$name")
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.required = true
+        }
+        // the test execution data file (usually test.exec)
+        getExecutionData().setFrom(fileTree(buildDir).include("/jacoco/*.exec"))
+    }
+
+    // Code Coverage check task
+    jacocoTestCoverageVerification {
+        dependsOn(junitTests)
+        dependsOn(integrationTests)
+        executionData(
+                fileTree(buildDir).include("/jacoco/integrationTests.exec"),
+                fileTree(buildDir).include("/jacoco/junitTests.exec")
+        )
+        violationRules {
+            failOnViolation = true
+            rule {
+                element = "PACKAGE"
+                includes = [
+                        "com.viafoura.template.microservice.*",
+                ]
+                limit {
+                    counter = "LINE"
+                    value = "COVEREDRATIO"
+                    minimum = 0.65
+                }
+            }
+        }
+    }
+}
+
+task installGitHooks(type: Copy) {
+    from new File(rootProject.rootDir, "scripts/pre-push")
+    into { new File(rootProject.rootDir, ".git/hooks") }
+    fileMode 0775 // https://chmodcommand.com/chmod-0775/
+}
+
+build.dependsOn installGitHooks
+
+dependencies {
+    implementation project(":application-main")
+}
+
+setMainClassName('com.viafoura.template.microservice.Main')
+
+run {
+    args = ['run', 'com.viafoura.template.microservice.vertx.verticle.MainVerticle']
+}
+
+shadowJar {
+    setArchivesBaseName('java-template-service')
+    setArchiveClassifier('fat')
+
+    manifest {
+        attributes(
+                'Main-Verticle': 'com.viafoura.template.microservice.vertx.verticle.MainVerticle',
+                'Main-Class': 'com.viafoura.template.microservice.vertx.ApplicationLauncher',
+                'Class-Path': '../conf/',
+                'Multi-Release': 'true'
+        )
+    }
+
+    mergeServiceFiles {
+        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+    }
+    // https://stackoverflow.com/questions/48033792/log4j2-error-statuslogger-unrecognized-conversion-specifier/
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer)
+
+    zip64 true
+}

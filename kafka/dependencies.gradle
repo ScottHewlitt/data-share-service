@@ -1,0 +1,17 @@
+dependencies {
+    implementation(project(":business-logic"))
+
+    implementation libs.guice
+    implementation libs.kafkaClients
+    implementation libs.kafkaStreams
+    implementation libs.lombok
+    implementation libs.micrometerCore
+    implementation libs.rxjava3
+    implementation libs.typesafeConfig
+
+    annotationProcessor libs.lombok
+
+    testImplementation libs.mockito
+    testImplementation libs.junitJupiter
+    testImplementation libs.kafkaStreamsTestUtils
+}

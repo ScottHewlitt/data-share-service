@@ -1,0 +1,12 @@
+dependencies {
+
+    implementation(project(":guice"))
+    implementation(project(":vertx"))
+
+    implementation libs.guice
+    implementation libs.vertxCore
+
+    intTestImplementation libs.junitJupiter
+    intTestImplementation libs.vertxJunit5
+    intTestImplementation libs.vertxWebClient
+}

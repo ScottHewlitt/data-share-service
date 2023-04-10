@@ -1,0 +1,68 @@
+version: "3.3"
+
+services:
+  zookeeper:
+    image: 218894879100.dkr.ecr.us-east-1.amazonaws.com/zookeeper:latest
+    networks:
+      - services
+    logging:
+      driver: none
+    ports:
+      - 2181:2181
+
+  kafka:
+    image: 218894879100.dkr.ecr.us-east-1.amazonaws.com/kafka:latest
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_CREATE_TOPICS: "dev-test-only-input-topic:1:1,dev-test-only-output-topic:1:1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - services
+    logging:
+      driver: none
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    depends_on:
+      - zookeeper
+
+  prometheus:
+    image: prom/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - services
+    volumes:
+      - ./docker/prometheus/:/etc/prometheus/
+      - ./docker/prometheus:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    volumes:
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./docker/grafana/provisioning/dashboards/vertx-grafana-dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yaml
+      - ./docker/grafana/provisioning/datasources/prometheus-ds.yml:/etc/grafana/provisioning/datasources/datasource.yaml
+    networks:
+      - services
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  services:
+
+volumes:
+  prometheus:
+  grafana-data:

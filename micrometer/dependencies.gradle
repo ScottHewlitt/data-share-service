@@ -1,0 +1,17 @@
+dependencies {
+    implementation(project(":business-logic"))
+
+    implementation libs.guice
+    implementation libs.lombok
+    implementation libs.micrometerCore
+    implementation libs.micrometerJmxRegistry
+    implementation libs.micrometerJvmExtras
+    implementation libs.micrometerPrometheusRegistry
+    implementation libs.micrometerStatsdRegistry
+    implementation libs.typesafeConfig
+
+    annotationProcessor libs.lombok
+
+    testImplementation libs.mockito
+    testImplementation libs.junitJupiter
+}

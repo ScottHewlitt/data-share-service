@@ -1,0 +1,15 @@
+name: Release workflow
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  default-release-workflow:
+    uses: viafoura/viafoura-gh-actions/.github/workflows/java-release.yml@main
+    with:
+      jvm-version: 17
+      ecr-repo-name: 'java-vertx-template-service'

@@ -1,0 +1,10 @@
+dependencies {
+
+    implementation libs.guice
+    implementation libs.lombok
+
+    annotationProcessor libs.lombok
+
+    testImplementation libs.mockito
+    testImplementation libs.junitJupiter
+}

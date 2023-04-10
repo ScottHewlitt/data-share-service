@@ -1,0 +1,128 @@
+openapi: 3.0.3
+info:
+  title: Template Service API
+  description: Template Service API
+  version: 1.0.0
+  contact:
+    name: Viafoura
+servers:
+  - url: 'http://localhost:8080'
+tags:
+  - name: Internal
+paths:
+  /healthy:
+    get:
+      tags:
+        - Internal
+      operationId: healthy
+      summary: Retrieve the service's health
+      description: This endpoint provides technical information about the service and if it has some issues
+      responses:
+        '204':
+          description: No Content
+        '503':
+          description: Service Unavailable
+  /metrics:
+    get:
+      tags:
+        - Internal
+      operationId: metrics
+      summary: Retrieve the service's metrics
+      description: This endpoint provides the metrics for Prometheus scrape
+      responses:
+        '200':
+          description: Success
+        '500':
+          description: Service Unavailable
+components:
+  securitySchemes:
+    TokenInCookie:
+      type: http
+      scheme: basic
+      description: >
+        Authentication using a JWT set in a cookie. Different access levels can be set for each endpoint.
+        Acceptable values are 'optional', 'user', 'mod' (moderator), 'admin', and 'client'.
+        If more than one is specified, the most restrictive level is used.
+    Token:
+      type: http
+      scheme: bearer
+      description: >
+        Authentication using a JWT via a Bearer token.  Different access levels can
+        be set for each endpoint.
+        Acceptable values are 'optional', 'user', 'mod' (moderator), 'admin', and 'client'.
+        If more than one is specified, the most restrictive level is used.
+  parameters:
+    SectionUuid:
+      name: section_uuid
+      in: path
+      description: The section identifying where the call is relative to
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ContentContainerUuid:
+      name: content_container_uuid
+      in: path
+      description: The content container identifying where the call is relative to
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    BadRequest:
+      description: BadRequest
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            response:
+              value:
+                error: missing or invalid parameters
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            response:
+              value:
+                error: missing credentials
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            response:
+              value:
+                error: missing permissions
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            response:
+              value:
+                error: not found
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            response:
+              value:
+                error: conflict
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      description: a generic error, detailing the error inside

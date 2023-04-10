@@ -1,0 +1,11 @@
+name: CI on pull request
+
+on:
+  pull_request:
+
+jobs:
+  default-build-workflow:
+    uses: viafoura/viafoura-gh-actions/.github/workflows/java-pull-request.yml@main
+    with:
+      jvm-version: 17
+      ecr-repo-name: 'java-vertx-template-service'

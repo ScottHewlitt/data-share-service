@@ -1,0 +1,67 @@
+version: "3.3"
+
+services:
+  zookeeper:
+    image: 218894879100.dkr.ecr.us-east-1.amazonaws.com/zookeeper:latest
+    networks:
+      - services
+    logging:
+      driver: none
+    ports:
+      - 2181:2181
+
+  kafka:
+    image: 218894879100.dkr.ecr.us-east-1.amazonaws.com/kafka:latest
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_CREATE_TOPICS: "dev-test-only-input-topic:1:1,dev-test-only-output-topic:1:1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - services
+    logging:
+      driver: none
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    depends_on:
+      - zookeeper
+
+  java-template-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VERSION
+    ports:
+      - 8080:8080  # HTTP
+      - 5005:5005  # Remote debugging
+      - 9016:9016  # JMX
+    environment:
+      - CONFIG_FORCE_kafka_bootstrap=kafka:9092
+    networks:
+      - services
+    depends_on:
+      - kafka
+
+  k6:
+    image: grafana/k6
+    container_name: k6Tests
+    command: run /scripts/healthy.js -e HOST=http://java-template-service:8080
+    networks:
+      - services
+    volumes:
+      - ./docker/k6:/scripts
+    depends_on:
+      - java-template-service
+
+networks:
+  services:
+
+volumes:
+  prometheus:
+  grafana-data:

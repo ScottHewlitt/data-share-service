@@ -1,0 +1,17 @@
+dependencies {
+
+    implementation(project(":business-logic"))
+    implementation(project(":kafka"))
+    implementation(project(":vertx"))
+    implementation(project(":micrometer"))
+
+    implementation libs.guice
+    implementation libs.kafkaClients
+    implementation libs.kafkaStreams
+    implementation libs.micrometerCore
+    implementation libs.typesafeConfig
+    implementation libs.vertxCore
+    implementation libs.vertxWebOpenApi
+
+    testImplementation libs.junitJupiter
+}

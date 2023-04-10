@@ -1,0 +1,16 @@
+#!/bin/sh
+
+echo "***** Running pre-push checks ******"
+echo "***** Use --no-verify to skip git hooks ******"
+
+git stash -q --keep-index
+
+./gradlew clean build editorConfigCheck jacocoTestCoverageVerification
+
+status=$?
+
+git stash pop -q
+
+echo "***** Done with pre-push checks ******"
+
+exit $status

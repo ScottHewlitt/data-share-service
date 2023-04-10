@@ -1,0 +1,8 @@
+rootProject.name = 'java-vertx-template-service'
+include 'application-main'
+include 'business-logic'
+include 'guice'
+include 'kafka'
+include 'micrometer'
+include 'vertx'
+
